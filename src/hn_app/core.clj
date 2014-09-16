@@ -192,7 +192,7 @@
 
 ;; *** Start email ***
 
-(defn send-mail
+(defn send-mail!
   [msg]
   (send-gmail {:from "redsourceinfo@gmail.com"
                :to ["jebbeich@gmail.com"]
@@ -230,7 +230,7 @@
         html (apply ->html (map m [:new :previous :discarded]))]
     (if email?
       (do
-        (when (:new m) (send-mail html))
+        (when (:new m) (send-mail! html))
         (set-app-state! (update-in app-state [:previously-matched-ids]
                                    set/union (set (map item->id (:new m))))))
       (println html))))
