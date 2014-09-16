@@ -116,16 +116,16 @@
 
 ;; *** Start app-state handling ***
 
-(defn new-app-info [] {:previously-matched-ids #{}})
+(defn new-app-state [] {:previously-matched-ids #{}})
 
-(defn set-app-info! [app-info] (spit (c :file) app-info))
+(defn set-app-state! [app-state] (spit (c :file) app-state))
 
-(defn get-app-info
+(defn get-app-state
   "Get info stored in file."
   []
   (try (read-string (slurp (c :file)))
        (catch java.io.FileNotFoundException e
-         (set-app-info! (new-app-info)))))
+         (set-app-state! (new-app-state)))))
 
 ;; *** End app-state handling ***
 
@@ -205,32 +205,33 @@
 
 ;; *** Start main job ***
 
-(defn get-new-matches*
-  [app-info page words-to-match min-comment-count]
-  (let [prev-ids (:previously-matched-ids app-info)
-        all-news-items (find-news-items page)
+(defn get-matches
+  "From the page, find all:
+  * news items that match our criteria
+  * matching news items that have already been reported
+  * news items that were unmatched (discarded)"
+  [page words-to-match min-comment-count prev-matched-ids]
+  (let [all-news-items (find-news-items page)
         matched (get-matching-news-items all-news-items words-to-match
                                          min-comment-count)
         discarded (set/difference (set all-news-items) (set matched))
-        prev-matched (filter (partial prev-matched? prev-ids) matched)
+        prev-matched (filter (partial prev-matched? prev-matched-ids) matched)
         new-matched (set/difference (set matched) (set prev-matched))]
-    [new-matched prev-matched discarded]))
-
-(defn get-new-matches!
-  "Find new news item matches, using and updating app state."
-  []
-  (let [app-info (get-app-info)
-        page (fetch-page (c :base-url) 1)
-        matches (get-new-matches* app-info page (c :words-to-match)
-                                  (c :min-comment-count))
-        new-matches (first matches)]
-    (set-app-info! (update-in app-info [:previously-matched-ids]
-                              set/union (set (map item->id new-matches))))
-    matches))
+    {:new new-matched :previous prev-matched :discarded discarded}))
 
 (defn -main [& argv]
-  (let [html (apply ->html (get-new-matches!))]
-   (if (= "email" (nth argv 0))
-     (send-mail html)
-     (println html))))
+  "Find new matches, email/output them, update app-state."
+  (let [email? (= "email" (nth argv 0))
+        app-state (get-app-state)
+        page (fetch-page (c :base-url) 1)
+        m (get-matches page (c :words-to-match)
+                           (c :min-comment-count)
+                           (:previously-matched-ids app-state))
+        html (apply ->html (map m [:new :previous :discarded]))]
+    (if email?
+      (do
+        (when (:new m) (send-mail html))
+        (set-app-state! (update-in app-state [:previously-matched-ids]
+                                   set/union (set (map item->id (:new m))))))
+      (println html))))
 
