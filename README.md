@@ -5,7 +5,7 @@ really usable without modifying the source.
 
 ## Installation
 
-Requires following environment variables:
+Requires following environment variables (hardwired to gmail smtp currently):
 
 * HN_EMAIL_USERNAME
 * HN_EMAIL_PASSWORD
