@@ -17,6 +17,7 @@ Should be scheduled to run periodically:
 
 ## TODO
 
+* Improve filtering, replace simple text matching
 * Replace clojstache w/ hiccup? Maybe use Enlive (already a dependency)
 * Serve HTML somehow (Ring/Compojure or via shell command?)
 
