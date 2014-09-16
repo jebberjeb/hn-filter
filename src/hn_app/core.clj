@@ -228,5 +228,9 @@
                               set/union (set (map item->id new-matches))))
     matches))
 
-(defn -main [& argv] (send-mail (apply ->html (get-new-matches!))))
+(defn -main [& argv]
+  (let [html (apply ->html (get-new-matches!))]
+   (if (= "email" (nth argv 0))
+     (send-mail html)
+     (println html))))
 
