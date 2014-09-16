@@ -13,11 +13,15 @@ Requires following environment variables (hardwired to gmail smtp currently):
 Should be scheduled to run periodically:
 
     >crontab -e
-    0 9 * * * ~/source/hn-filter/lein run
+    
+    # Daily HN email
+    0 9 * * * ~/source/hn-filter/lein run email
+    
+    # Dump it periodically (serve it up however)
+    */5 * * * * ~/source/hn-filter/lein run >> hn.html
 
 ## TODO
 
 * Improve filtering, replace simple text matching
 * Replace clojstache w/ hiccup? Maybe use Enlive (already a dependency)
-* Serve HTML somehow (Ring/Compojure or via shell command?)
 
