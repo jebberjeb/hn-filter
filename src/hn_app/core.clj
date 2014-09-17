@@ -85,12 +85,12 @@
   "From a sequence of a-tag pairs (link, content), find news items."
   [seq-of-a-pairs]
   (l/run* [c d g h]
-        (l/fresh [lof a b e f]
-                 (slice-of-four seq-of-a-pairs lof)
-                 (l/== lof [[a b] [c d] [e f] [g h]])
-                 (starts-with a "vote")
-                 (starts-with e "user")
-                 (starts-with g "item"))))
+          (l/fresh [lof a b e f]
+                   (slice-of-four seq-of-a-pairs lof)
+                   (l/== lof [[a b] [c d] [e f] [g h]])
+                   (starts-with a "vote")
+                   (starts-with e "user")
+                   (starts-with g "item"))))
 
 (defn find-news-items
   "From a hn page (seq of nodes via Enlive) for each news item, return
@@ -224,9 +224,8 @@
   (let [email? (= "email" (nth argv 0))
         app-state (get-app-state)
         page (fetch-page (c :base-url) 1)
-        m (get-matches page (c :words-to-match)
-                           (c :min-comment-count)
-                           (:previously-matched-ids app-state))
+        m (get-matches page (c :words-to-match) (c :min-comment-count)
+                       (:previously-matched-ids app-state))
         html (apply ->html (map m [:new :previous :discarded]))]
     (if email?
       (do
